@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Domino Dancing</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Domino Dancing</h1>
+      <button id="restart">Restart the Game</button>
+    </header>
+    <main>
+      <section>
+        <h2>User's stock:</h2>
+        <button id="miss-move">Miss move</button>
+        <button id="draw-tile">Draw tile</button>
+        <p id="message" class="info">Select a tile for the move:</p>
+        <div id="user-stock"></div>
+        <h2>Playline:</h2>
+        <div id="play-line"></div>
+      </section>
+      <section>
+        <button id="simulate">Simulate the rest of the game</button>
+        <pre id="domino-log"></pre>
+      </section>
+    </main>
+    <script type="module" src="./lib/index.js"></script>
+  </body>
+</html>
