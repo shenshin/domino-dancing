@@ -4,7 +4,7 @@ import { Utility } from './domino-utility.js';
 import { DominoDelegate } from './domino-delegate.js';
 import { MatchingTiles } from './domino-matching-tiles.js';
 /**
- * The Model of 'Domino Dancing' game
+ * The Model of 'Dominoes' game
  */
 export class DominoGame {
   players: Player[] = [];
@@ -24,7 +24,7 @@ export class DominoGame {
 
   gameOver: boolean = false;
 
-  moveNumber: number = 0;
+  moveNumber!: number;
 
   // initiates a new game, setting the number of tiles
   // to be drawn to each player
@@ -73,7 +73,7 @@ export class DominoGame {
     }
 
     // reset game data
-    this.moveNumber = 0;
+    this.moveNumber = 1;
     this.gameOver = false;
     this.resetStock();
     this.playLine = [];
@@ -109,8 +109,9 @@ export class DominoGame {
       chosenTile,
     );
     if (result) {
-      this.moveNumber += 1;
-      this.delegate.onNextMove(this.moveNumber);
+      // send a message to the delegate object that the game is about to start
+      this.sendStartMessage();
+      this.sendNextMoveMessage();
       this.delegate.onSuccess(
         user.name,
         result.tileFromPlayer.toString(),
@@ -134,6 +135,8 @@ export class DominoGame {
   }
 
   playerMissedMove() {
+    this.sendStartMessage();
+    this.sendNextMoveMessage();
     this.players[0].missedLastMove = true;
     this.makeMove({ startFrom: 1 });
   }
@@ -189,13 +192,11 @@ export class DominoGame {
    */
   runSimulation(): void {
     // send a message to the delegate object that the game is about to start
-    this.delegate.onStart(...this.playLine.map((tile) => tile.toString()));
-
+    this.sendStartMessage();
     // Loop starts each next move
     for (;;) {
       // send a message to the delegate object that next move is about to start
-      this.moveNumber += 1;
-      this.delegate.onNextMove(this.moveNumber);
+      this.sendNextMoveMessage();
       if (!this.makeMove({ startFrom: 0 })) break;
     }
   }
@@ -245,6 +246,18 @@ export class DominoGame {
     ).map((twoNumbers) => new Tile([twoNumbers[0], twoNumbers[1]]));
     // shuffle stock
     Utility.shuffle(this.stock);
+  }
+
+  // send a message to the delegate object that the game is about to start
+  private sendStartMessage(): void {
+    if (this.moveNumber === 1) {
+      this.delegate.onStart(...this.playLine.map((tile) => tile.toString()));
+    }
+  }
+
+  private sendNextMoveMessage(): void {
+    this.delegate.onNextMove(this.moveNumber);
+    this.moveNumber += 1;
   }
 
   /**

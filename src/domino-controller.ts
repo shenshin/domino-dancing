@@ -1,17 +1,15 @@
 import { DominoGame } from './domino-game.js';
 import { DominoDelegate } from './domino-delegate.js';
-import { Player } from './domino-player.js';
 import { DominoIcon } from './domino-icon.js';
 import Utility from './domino-utility.js';
 
-export class DominoController implements DominoDelegate {
+/**
+ * Connects Dominoes games model class DominoGame with it's
+ * HTML representation
+ */
+class DominoController implements DominoDelegate {
   // start new game by drawing 7 tiles to each player
   game: DominoGame = new DominoGame(7);
-
-  // User plays vs JavaScript
-  user: Player = new Player('User');
-
-  program: Player = new Player('JavaScript');
 
   // HTML references
   userStock: HTMLElement = Utility.getElement('user-stock');
@@ -33,14 +31,16 @@ export class DominoController implements DominoDelegate {
   constructor() {
     this.game.delegate = this;
 
-    this.game.addPlayer(this.user);
-    this.game.addPlayer(this.program);
+    this.game.addPlayers('User', 'JavaScript');
 
     this.addEventListeners();
 
     this.restartGame();
   }
 
+  /**
+   * Adds event listeners to game buttons
+   */
   addEventListeners() {
     const buttonPushed = (event: any) => {
       if (!this.game.gameOver) {
@@ -81,6 +81,9 @@ export class DominoController implements DominoDelegate {
     });
   }
 
+  /**
+   * Starts Dominoes from the beginning
+   */
   restartGame(): void {
     this.game.restart();
     this.updateViews();
@@ -88,13 +91,14 @@ export class DominoController implements DominoDelegate {
   }
 
   /**
-   * Redraws user stock and game line on each tile selection
+   * Redraws user stock and game line on each tile selection.
+   * Adds event listeners to tiles
    */
   updateViews(): void {
     this.userStock.innerText = '';
     this.playLine.innerText = '';
     // draw user stock and add event listeners to tiles on screen
-    this.user.stock.forEach((tile) => {
+    this.game.players[0].stock.forEach((tile) => {
       DominoIcon.create({
         stock: this.userStock,
         id: tile.id,
@@ -135,11 +139,11 @@ export class DominoController implements DominoDelegate {
     this.dominoLog.innerText += `Now playing: ${this.game.players
       .map((p) => p.name)
       .join(', ')}`;
-    this.dominoLog.innerText += `\nGame is starting with ${tile.join(' ')}`;
+    this.dominoLog.innerText += `\nGame is starting with ${tile.join(' ')}\n`;
   }
 
   onNextMove(moveNumber: number) {
-    this.dominoLog.innerText += `\n\nMove ${moveNumber} --------------------------------------------------------------------`;
+    this.dominoLog.innerText += `\nMove ${moveNumber} --------------------------------------------------------------------\n`;
   }
 
   onSuccess(
@@ -184,4 +188,5 @@ ${playersStock}\n`;
   }
 }
 
-export default DominoController;
+// eslint-disable-next-line no-new
+new DominoController();

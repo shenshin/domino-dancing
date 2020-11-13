@@ -1,10 +1,19 @@
 import { Utility } from './domino-utility.js';
-
+/**
+ * Collection of static methods drawing tiles HTML representations
+ */
 export class DominoIcon {
+  /**
+   * Returnes HTML entity representing a tile with corresponding ID
+   * @param id tile id (i.e. '06' or '15')
+   */
   static from(id: string): string {
     return DominoIcon.tileIcon[id];
   }
 
+  /**
+   * Removes HTML representation of a tile from it's parent HTML element
+   */
   static remove({ stock, id }: { stock: HTMLElement; id: string }): void {
     const tileIcon = Utility.getElement(id);
     try {
@@ -14,6 +23,10 @@ export class DominoIcon {
     }
   }
 
+  /**
+   * Creates HTML element repesenting tile with ID='id' and appends it
+   * to HTML element 'stock'
+   */
   static create({
     stock,
     id,
@@ -29,6 +42,9 @@ export class DominoIcon {
     return iconSpan;
   }
 
+  /**
+   * The rule of converting tile ID to HTML entity
+   */
   static tileIcon: { [key: string]: string } = {
     '00': '&#127025;',
     '01': '&#127026;',

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /**
  * Protocol to implement by a class that wants to receive messages
- * from Domino-Dancing game.
+ * from Domino-Dancing game. Methods represent different game states
  */
 export interface DominoDelegate {
   onStart(...tile: string[]): void;

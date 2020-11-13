@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 /**
  * Couple necessary algorithms for Domino game
  */
@@ -35,7 +34,9 @@ export class Utility {
     for (let i = array.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * i);
       const temp = array[i];
+      // eslint-disable-next-line no-param-reassign
       array[i] = array[j];
+      // eslint-disable-next-line no-param-reassign
       array[j] = temp;
     }
   }
