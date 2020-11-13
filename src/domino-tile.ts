@@ -1,5 +1,3 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable import/extensions */
 import { MatchingTiles } from './domino-matching-tiles.js';
 /**
  * Domino tile model. Number of tiles in a game is usually 28 (but not mandatory)

@@ -1,5 +1,3 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable import/extensions */
 import { Tile } from './domino-tile.js';
 import { Player } from './domino-player.js';
 import { Utility } from './domino-utility.js';

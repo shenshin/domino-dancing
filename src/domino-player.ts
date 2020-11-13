@@ -1,5 +1,3 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable import/extensions */
 import { Tile } from './domino-tile.js';
 import { MatchingTiles } from './domino-matching-tiles.js';
 /**

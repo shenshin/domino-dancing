@@ -1,5 +1,3 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable import/extensions */
 import { DominoGame } from './domino-game.js';
 import { DominoDelegate } from './domino-delegate.js';
 import { Player } from './domino-player.js';

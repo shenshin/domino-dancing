@@ -1,5 +1,3 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable import/extensions */
 import { Utility } from './domino-utility.js';
 
 export class DominoIcon {
