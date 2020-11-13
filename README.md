@@ -4,7 +4,9 @@ This Domino Game simulation algorithm and TypeScript implementation is designed 
 
 This program is inspired by a JavaScript course by [HackYourFuture, Amsterdam](https://www.hackyourfuture.net/).
 
-The technical assignment for the simulation is here: [technical assignment](https://github.com/HackYourFuture/post-grad-ed/blob/master/technical-assignments/w1-w2/JS-DominoGame.pdf)
+
+The technical assignment for the simulation is here: 
+![Dominoes game technical assignment](./JS-DominoGame.pdf)
 
 Here is the [working copy of the interactive version and the simulation](https://shenshin.github.io/domino-dancing/).
 
