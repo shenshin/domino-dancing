@@ -166,7 +166,7 @@ export class DominoGame {
       this.gameOver = true;
       // if all players missed the previous move return players with the least
       // stock lengths
-      return this.players.concat().sort((a, b) => a.stockLength - b.stockLength)
+      return [...this.players].sort((a, b) => a.stockLength - b.stockLength)
         .filter((p) => p.stockLength === this.players[0].stockLength);
     }
     return null;

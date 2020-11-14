@@ -9,7 +9,8 @@ import Utility from './domino-utility.js';
  */
 class DominoController implements DominoDelegate {
   // start new game by drawing 7 tiles to each player
-  game: DoninoInteractiveGame = new DoninoInteractiveGame({ delegate: this, tilesNumber: 7 });
+  game: DoninoInteractiveGame =
+    new DoninoInteractiveGame({ delegate: this, tilesNumber: 7 });
 
   // HTML references
   userStock: HTMLElement = Utility.getElement('user-stock');
