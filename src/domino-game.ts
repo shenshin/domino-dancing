@@ -20,29 +20,24 @@ export class DominoGame {
   initialTiles: number;
 
   // a delegate object that will receive ALL the events messages
-  delegate!: DominoDelegate;
+  delegate: DominoDelegate;
 
   gameOver: boolean = false;
 
   moveNumber!: number;
 
-  // initiates a new game, setting the number of tiles
-  // to be drawn to each player
-  constructor(tilesNumber: number) {
-    this.initialTiles = tilesNumber;
-  }
-
   /**
-   * Adds player as a Player object
-   * @param player object of Player type
+   * Initiates a new dominoes game. Setts the number of tiles
+   * to be drawn to each player and a delegate object.
+   * @param tilesNumber number of tiles, each player receives
+   * at the beginning of the game
+   * @param delegate an instance of a class that is going to
+   * receive messages from the game model. Class should
+   * implement the DominoDelegate protocol
    */
-  addPlayer(player: Player): void {
-    this.players.push(player);
-  }
-
-  // Draw an 'initialTiles' number of tiles to each player
-  drawTilesTo(player: Player): void {
-    player.add(...this.stock.splice(0, this.initialTiles));
+  constructor(params: {delegate: DominoDelegate, tilesNumber: number}) {
+    this.initialTiles = params.tilesNumber;
+    this.delegate = params.delegate;
   }
 
   /**
@@ -57,18 +52,11 @@ export class DominoGame {
    * Starts the game from the beginning
    */
   restart(): void {
-    // check if there is class that set itself to get the messages from the game
-    if (!this.delegate) {
-      throw new ReferenceError(
-        'Set up an instance of DominoDelegate class as a delegate of DominoGame',
-      );
-    }
-
     // check if the number of players is more than one
-    const count = this.players.length;
-    if (count < 2) {
+    const numberOfPlayers = this.players.length;
+    if (numberOfPlayers < 2) {
       throw new RangeError(
-        `Add ${2 - count} more player${count > 1 ? 's' : ''} to the game!`,
+        `Add ${2 - numberOfPlayers} more player${numberOfPlayers > 1 ? 's' : ''} to the game!`,
       );
     }
 
@@ -95,72 +83,21 @@ export class DominoGame {
     this.playLine.push(this.stock.shift()!);
   }
 
-  /* ************************ Methods to update model from UI *************************** */
   /**
-   * Checks if user selected a valid tile and if so, inserts this tile into the playline
-   * @param tileID string representation of tile coming from the user interface
-   * @returns tile: selected tile, isValid: whether the tile is accepted or not
-   */
-  playerSelected(tileID: string): { tile: Tile; isValid: boolean } {
-    const user = this.players[0];
-    const chosenTile = user.getTileByID(tileID);
-    const result = user.check(
-      [this.playLine[0], this.playLine[this.playLine.length - 1]],
-      chosenTile,
-    );
-    if (result) {
-      // send a message to the delegate object that the game is about to start
-      this.sendStartMessage();
-      this.sendNextMoveMessage();
-      this.delegate.onSuccess(
-        user.name,
-        result.tileFromPlayer.toString(),
-        result.tileFromLine.toString(),
-        this.toString(),
-        user.toString(),
-      );
-      Tile.rotateIfNeeded(result);
-      this.insertTile(result);
-      return { tile: result.tileFromPlayer, isValid: true };
-    }
-    return { tile: chosenTile, isValid: false };
-  }
-
-  playerDrawsTile(): void {
-    if (this.stock.length > 0) {
-      this.players[0].add(this.stock.shift()!);
-    } else {
-      this.playerMissedMove();
-    }
-  }
-
-  playerMissedMove() {
-    this.sendStartMessage();
-    this.sendNextMoveMessage();
-    this.players[0].missedLastMove = true;
-    this.makeMove({ startFrom: 1 });
-  }
-
-  /* **************************************************************************** */
-
-  /**
-   * Starts one move of each player
+   * Starts one move of each player. Returns true for next player to move or
+   * false if a winner was found during the move.
    * @param startFrom the number of player from which to start moving
    */
-  makeMove({ startFrom }: { startFrom: number }): boolean {
+  makeMove(startFrom: number): boolean {
     for (
       let playerIndex = startFrom;
       playerIndex < this.players.length;
       playerIndex += 1
     ) {
       const player: Player = this.players[playerIndex];
-      const matching = player.find([
-        this.playLine[0],
-        this.playLine[this.playLine.length - 1],
-      ]);
+      const matching = player.find([this.first, this.last]);
       if (matching) {
         player.missedLastMove = false;
-        Tile.rotateIfNeeded(matching);
         this.insertTile(matching);
         this.delegate.onSuccess(
           player.name,
@@ -178,9 +115,9 @@ export class DominoGame {
         player.missedLastMove = true;
         this.delegate.onMiss(player.name);
       }
-      const { winner } = this;
-      if (winner) {
-        this.delegate.onWin(winner.name, winner.stockLength);
+      const { winners } = this;
+      if (winners) {
+        this.delegate.onWin(winners.map((w) => w.name), winners[0].stockLength);
         return false;
       }
     }
@@ -197,17 +134,18 @@ export class DominoGame {
     for (;;) {
       // send a message to the delegate object that next move is about to start
       this.sendNextMoveMessage();
-      if (!this.makeMove({ startFrom: 0 })) break;
+      if (!this.makeMove(0)) break;
     }
   }
 
-  /** Puts a tile to the right or left of the game line */
-  insertTile(tile: MatchingTiles) {
-    if (tile?.goesRight) {
-      this.playLine.push(tile?.tileFromPlayer);
-    } else {
-      this.playLine.unshift(tile?.tileFromPlayer!);
-    }
+  /** First tile of the game line */
+  get first(): Tile {
+    return this.playLine[0];
+  }
+
+  /** Last tile of the game line */
+  get last(): Tile {
+    return this.playLine[this.playLine.length - 1];
   }
 
   /**
@@ -215,30 +153,50 @@ export class DominoGame {
    * Game stops if player's stock is empty or noone can make a move
    * @returns the winner or null if game is about to continue
    */
-  get winner(): Player | null {
+  get winners(): Player[] | null {
     // return player who has no more tiles
     const playedAllTiles = this.players.find(
       (player) => player.stockLength === 0,
     );
     if (playedAllTiles) {
       this.gameOver = true;
-      return playedAllTiles;
+      return [playedAllTiles];
     }
-    // if all players missed the previous move return the one who has less tiles
     if (this.players.every((player) => player.missedLastMove)) {
       this.gameOver = true;
-      return this.players.reduce(
-        (winner, player) => (winner.stockLength < player.stockLength ? winner : player),
-      );
+      // if all players missed the previous move return players with the least
+      // stock lengths
+      return this.players.sort((a, b) => a.stockLength - b.stockLength)
+        .filter((p) => p.stockLength === this.players[0].stockLength);
+      /*       debugger;
+      return this.players.reduce((array: Player[], player: Player) => {
+        if (array[array.length - 1].stockLength === player.stockLength) {
+          return array.concat(player);
+        }
+        return array;
+      },
+      [this.players[0]]); */
     }
-    // continue game
     return null;
+  }
+
+  /**
+   * Adds player as a Player object
+   * @param player object of Player type
+   */
+  private addPlayer(player: Player): void {
+    this.players.push(player);
+  }
+
+  // Draw an 'initialTiles' number of tiles to each player
+  private drawTilesTo(player: Player): void {
+    player.add(...this.stock.splice(0, this.initialTiles));
   }
 
   /**
    * Creates and shuffles a standart domino stock, consisting of 28 tiles
    */
-  resetStock(): void {
+  private resetStock(): void {
     // makes stock with repetition algorithm
     this.stock = Utility.combinationsWithRepetition(
       [...Array(7).keys()],
@@ -248,14 +206,30 @@ export class DominoGame {
     Utility.shuffle(this.stock);
   }
 
-  // send a message to the delegate object that the game is about to start
-  private sendStartMessage(): void {
+  /** Puts a tile to the right or left of the game line */
+  protected insertTile(tile: MatchingTiles) {
+    if (
+      (!tile?.goesRight && tile?.tileFromLine.first === tile?.tileFromPlayer.first)
+        || (tile?.goesRight && tile?.tileFromLine.last === tile?.tileFromPlayer.last)
+    ) {
+      tile?.tileFromPlayer.rotate();
+    }
+    if (tile?.goesRight) {
+      this.playLine.push(tile?.tileFromPlayer);
+    } else {
+      this.playLine.unshift(tile?.tileFromPlayer!);
+    }
+  }
+
+  /** Sends a message to the delegate object that the game is about to start */
+  protected sendStartMessage(): void {
     if (this.moveNumber === 1) {
       this.delegate.onStart(...this.playLine.map((tile) => tile.toString()));
     }
   }
 
-  private sendNextMoveMessage(): void {
+  /** Sends a message to the delegate object that next move is about to start */
+  protected sendNextMoveMessage(): void {
     this.delegate.onNextMove(this.moveNumber);
     this.moveNumber += 1;
   }

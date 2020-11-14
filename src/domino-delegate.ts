@@ -14,7 +14,7 @@ export interface DominoDelegate {
     playerStock: string,
   ): void;
   onMiss(player: string): void;
-  onWin(player: string, remainingCards: number): void;
+  onWin(winnersNames: string[], remainingCards: number): void;
   onRepeat(player: string, tile: string): void;
 }
 

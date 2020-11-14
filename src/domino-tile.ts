@@ -1,4 +1,3 @@
-import { MatchingTiles } from './domino-matching-tiles.js';
 /**
  * Domino tile model. Number of tiles in a game is usually 28 (but not mandatory)
  */
@@ -28,7 +27,7 @@ export class Tile {
     return this.ends[1];
   }
 
-  private rotate() {
+  rotate() {
     this.upSideUp = !this.upSideUp;
   }
 
@@ -38,23 +37,6 @@ export class Tile {
 
   toString() {
     return `<${this.first}:${this.last}>`;
-  }
-
-  /**
-   * Rotates selected tile. When a player is about to put tile to the game line,
-   * it is sometimes necessary to rotate his tile. This static method method
-   * receives 'tileFromPlayer' and checks if it's necessary to rotate it
-   * in order to put next to 'tileFromLine'
-   * @param matching matching player's tile and a tile in game line next to
-   *  which it is about to be put either from left or right
-   */
-  static rotateIfNeeded(matching: MatchingTiles): void {
-    if (
-      (!matching?.goesRight && matching?.tileFromLine.first === matching?.tileFromPlayer.first)
-        || (matching?.goesRight && matching?.tileFromLine.last === matching?.tileFromPlayer.last)
-    ) {
-      matching?.tileFromPlayer.rotate();
-    }
   }
 }
 

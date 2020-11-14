@@ -1,4 +1,4 @@
-import { DominoGame } from './domino-game.js';
+import { DoninoInteractiveGame } from './domino-interactive-game.js';
 import { DominoDelegate } from './domino-delegate.js';
 import { DominoIcon } from './domino-icon.js';
 import Utility from './domino-utility.js';
@@ -9,7 +9,7 @@ import Utility from './domino-utility.js';
  */
 class DominoController implements DominoDelegate {
   // start new game by drawing 7 tiles to each player
-  game: DominoGame = new DominoGame(7);
+  game: DoninoInteractiveGame = new DoninoInteractiveGame({ delegate: this, tilesNumber: 7 });
 
   // HTML references
   userStock: HTMLElement = Utility.getElement('user-stock');
@@ -29,9 +29,7 @@ class DominoController implements DominoDelegate {
   simulateButton: HTMLElement = Utility.getElement('simulate');
 
   constructor() {
-    this.game.delegate = this;
-
-    this.game.addPlayers('User', 'JavaScript');
+    this.game.addPlayers('User', 'Luna', 'Beatrix');
 
     this.addEventListeners();
 
@@ -64,8 +62,7 @@ class DominoController implements DominoDelegate {
         }
         this.updateViews();
       } else {
-        this.messageField.className = 'warning';
-        this.messageField.innerHTML = `The game is finished. Player '${this.game.winner!.name}' has won! Restart the game!`;
+        this.gameOverWarning();
       }
     };
     [
@@ -112,7 +109,7 @@ class DominoController implements DominoDelegate {
             this.messageField.innerHTML = `You selected ${selection.tile}<br><br>`;
             // move goes to the next player
             const makeMove = () => {
-              this.game.makeMove({ startFrom: 1 });
+              this.game.javascriptMakesMove();
               this.updateViews();
             };
             setTimeout(makeMove, 2000);
@@ -122,8 +119,7 @@ class DominoController implements DominoDelegate {
           }
           this.updateViews();
         } else {
-          this.messageField.className = 'warning';
-          this.messageField.innerHTML = `The game is over. ${this.game.winner!.name} has won. Restart the game!`;
+          this.gameOverWarning();
         }
       });
     });
@@ -131,6 +127,13 @@ class DominoController implements DominoDelegate {
     this.game.playLine.forEach((tile) => {
       DominoIcon.create({ stock: this.playLine, id: tile.id });
     });
+  }
+
+  private gameOverWarning() {
+    this.messageField.className = 'warning';
+    const many: boolean = this.game.winners!.length > 0;
+    const winners: string = this.game.winners!.map((w) => w.name).join(', ');
+    this.messageField.innerHTML = `The game is finished. The winner${many ? 's are' : ' is'}: ${winners} Restart the game!`;
   }
 
   /* ************** methods called on the different game states **************** */
@@ -173,16 +176,25 @@ ${playersStock}\n`;
     this.dominoLog.innerText += `\n${message}`;
   }
 
-  onWin(name: string, tilesLeft: number = 0) {
+  onWin(winnersNames: string[], tilesLeft: number = 0) {
     this.messageField.className = 'info';
     this.messageField.classList.add('winner');
-    this.messageField.innerHTML = `'${name}' has won!`;
-
-    this.dominoLog.innerText += `\n${name} has won! `;
-    if (tilesLeft > 0) {
-      this.dominoLog.innerText += `${name} still has ${tilesLeft} tile${
-        tilesLeft > 1 ? 's' : ''
-      } in the stock, but the others have more.`;
+    if (winnersNames.length === 1) {
+      const name = winnersNames[0];
+      this.messageField.innerHTML = `'${name}' has won!`;
+      this.dominoLog.innerText += `\n${name} has won! `;
+      if (tilesLeft > 0) {
+        const manyPlayers: boolean = this.game.players.length - 1 > 1;
+        this.dominoLog.innerText += `${name} still has ${tilesLeft} tile${
+          tilesLeft > 1 ? 's' : ''
+        } in the stock, but the other${manyPlayers ? 's have' : ' player has'} more.`;
+      }
+    } else if (winnersNames.length > 1) {
+      const message = `DRAW! The players ${winnersNames.join(', ')} have ${tilesLeft} tile${tilesLeft > 1 ? 's' : ''} left each.`;
+      this.messageField.innerHTML = message;
+      this.dominoLog.innerText += `\n${message}`;
+    } else {
+      throw new Error(`Unexpected number of winners in the game: ${winnersNames.length}`);
     }
     this.updateViews();
   }
