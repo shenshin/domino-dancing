@@ -3,14 +3,15 @@ import { DominoDelegate } from './domino-delegate.js';
 import { DominoIcon } from './domino-icon.js';
 import Utility from './domino-utility.js';
 
+// ЗАНЯТЬСЯ БОЛЬЕЕ УДОБНЫМ html - CSS
+
 /**
  * Connects Dominoes games model class DominoGame with it's
  * HTML representation
  */
 class DominoController implements DominoDelegate {
   // start new game by drawing 7 tiles to each player
-  game: DoninoInteractiveGame =
-    new DoninoInteractiveGame({ delegate: this, tilesNumber: 7 });
+  game: DoninoInteractiveGame;
 
   // HTML references
   userStock: HTMLElement = Utility.getElement('user-stock');
@@ -30,7 +31,9 @@ class DominoController implements DominoDelegate {
   simulateButton: HTMLElement = Utility.getElement('simulate');
 
   constructor() {
-    this.game.addPlayers('User', 'Luna', 'Beatrix');
+    this.game = new DoninoInteractiveGame(this);
+    this.game.initialTiles = 3;
+    this.game.addPlayers('User', 'Luna', 'Beatrix', 'Maxima');
 
     this.addEventListeners();
 
@@ -51,7 +54,7 @@ class DominoController implements DominoDelegate {
             if (this.game.stock.length === 0) {
               this.messageField.className = 'warning';
               this.messageField.innerHTML = 'No more tiles in the stock! You miss the move.';
-              setTimeout(this.game.playerDrawsTile.bind(this.game), 1000);
+              setTimeout(this.game.playerMissedMove.bind(this.game), 1000);
             } else {
               this.game.playerDrawsTile();
             }
@@ -97,28 +100,24 @@ class DominoController implements DominoDelegate {
     this.playLine.innerText = '';
     // draw user stock and add event listeners to tiles on screen
     this.game.players[0].stock.forEach((tile) => {
-      DominoIcon.create({
-        stock: this.userStock,
-        id: tile.id,
-      }).addEventListener('click', (event) => {
+      DominoIcon.create(this.userStock, tile.id, 'vertical').addEventListener('click', (event) => {
         if (!this.game.gameOver) {
           const selection = this.game.playerSelected(
             (event.target as any).id as string,
           );
           if (selection.isValid) {
             this.messageField.className = 'info';
-            this.messageField.innerHTML = `You selected ${selection.tile}<br><br>`;
+            this.messageField.innerHTML = `You selected ${selection.tile}<br>`;
             // move goes to the next player
-            const makeMove = () => {
+            this.updateViews();
+            setTimeout(() => {
               this.game.javascriptMakesMove();
               this.updateViews();
-            };
-            setTimeout(makeMove, 2000);
+            }, 2000);
           } else {
             this.messageField.className = 'warning';
             this.messageField.innerHTML = `The tile ${selection.tile} does not match the game line! <br>Try another one or Draw a new tile!`;
           }
-          this.updateViews();
         } else {
           this.gameOverWarning();
         }
@@ -126,7 +125,7 @@ class DominoController implements DominoDelegate {
     });
     // draw play line
     this.game.playLine.forEach((tile) => {
-      DominoIcon.create({ stock: this.playLine, id: tile.id });
+      DominoIcon.create(this.playLine, tile.id, 'mixed');
     });
   }
 

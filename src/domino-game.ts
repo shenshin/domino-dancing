@@ -9,17 +9,17 @@ import { MatchingTiles } from './domino-matching-tiles.js';
 export class DominoGame {
   players: Player[] = [];
 
-  // tiles that are not the in game yet and wait
-  // face down to be taken to players' stocks
+  /** Tiles that are not the in game yet and wait
+   face down for their turn */
   stock: Tile[] = [];
 
-  // tiles, put by each player on the table
+  /** Tiles, put one by one on the table by each player */
   playLine: Tile[] = [];
 
-  // The number of tiles, each player gets in the beginning
-  initialTiles: number;
+  /** The number of tiles, each player gets in the beginning */
+  initialTiles: number = 7;
 
-  // a delegate object that will receive ALL the events messages
+  /** A delegate object that will receive ALL the events messages */
   delegate: DominoDelegate;
 
   gameOver: boolean = false;
@@ -27,17 +27,13 @@ export class DominoGame {
   moveNumber!: number;
 
   /**
-   * Initiates a new dominoes game. Setts the number of tiles
-   * to be drawn to each player and a delegate object.
-   * @param tilesNumber number of tiles, each player receives
-   * at the beginning of the game
+   * Initiates a new dominoes game.
    * @param delegate an instance of a class that is going to
    * receive messages from the game model. Class should
    * implement the DominoDelegate protocol
    */
-  constructor(params: {delegate: DominoDelegate, tilesNumber: number}) {
-    this.initialTiles = params.tilesNumber;
-    this.delegate = params.delegate;
+  constructor(delegate: DominoDelegate) {
+    this.delegate = delegate;
   }
 
   /**
