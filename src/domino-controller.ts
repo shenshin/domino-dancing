@@ -45,15 +45,14 @@ class DominoController implements DominoDelegate {
    */
   addEventListeners() {
     const buttonPushed = (event: any) => {
-      if (!this.game.gameOver) {
+      if (!this.game.findWinners()) {
         switch (event.target.id) {
           case 'miss-move':
             this.game.playerMissedMove();
             break;
           case 'draw-tile':
             if (this.game.stock.length === 0) {
-              this.messageField.className = 'warning';
-              this.messageField.innerHTML = 'No more tiles in the stock! You miss the move.';
+              this.writeMessage('No more tiles in the stock! You miss the move.', 'warning');
               setTimeout(this.game.playerMissedMove.bind(this.game), 1000);
             } else {
               this.game.playerDrawsTile();
@@ -76,8 +75,6 @@ class DominoController implements DominoDelegate {
     ].forEach((button) => button.addEventListener('click', buttonPushed));
 
     this.restartButton.addEventListener('click', () => {
-      this.messageField.innerHTML = 'Select a tile for the move:';
-      this.messageField.className = 'info';
       this.restartGame();
     });
   }
@@ -86,6 +83,7 @@ class DominoController implements DominoDelegate {
    * Starts Dominoes from the beginning
    */
   restartGame(): void {
+    this.writeMessage('Select a tile for the move:');
     this.game.restart();
     this.updateViews();
     this.dominoLog.innerText = '';
@@ -101,22 +99,22 @@ class DominoController implements DominoDelegate {
     // draw user stock and add event listeners to tiles on screen
     this.game.players[0].stock.forEach((tile) => {
       DominoIcon.create(this.userStock, tile.id, 'vertical').addEventListener('click', (event) => {
-        if (!this.game.gameOver) {
+        if (!this.game.findWinners()) {
           const selection = this.game.playerSelected(
             (event.target as any).id as string,
           );
           if (selection.isValid) {
-            this.messageField.className = 'info';
-            this.messageField.innerHTML = `You selected ${selection.tile}<br>`;
-            // move goes to the next player
             this.updateViews();
-            setTimeout(() => {
-              this.game.javascriptMakesMove();
-              this.updateViews();
-            }, 2000);
+            // move goes to the next player
+            if (!this.game.findWinners()) {
+              this.writeMessage(`You selected ${selection.tile}<br>`);
+              setTimeout(() => {
+                this.game.javascriptMakesMove();
+                this.updateViews();
+              }, 2000);
+            }
           } else {
-            this.messageField.className = 'warning';
-            this.messageField.innerHTML = `The tile ${selection.tile} does not match the game line! <br>Try another one or Draw a new tile!`;
+            this.writeMessage(`The tile ${selection.tile} does not match the game line!<br>Try another one or Draw a new tile!`, 'warning');
           }
         } else {
           this.gameOverWarning();
@@ -125,28 +123,45 @@ class DominoController implements DominoDelegate {
     });
     // draw play line
     this.game.playLine.forEach((tile) => {
-      DominoIcon.create(this.playLine, tile.id, 'mixed');
+      const tileHTML = DominoIcon.create(this.playLine, tile.id, 'mixed');
+      if (tile.id === this.game.firstTile.id) {
+        tileHTML.classList.add('first-in-line');
+      }
     });
   }
 
+  private writeMessage(text: string, type: 'info' | 'warning' = 'info', large: boolean = false) {
+    this.messageField.className = type;
+    this.messageField.innerHTML = text;
+    if (large) {
+      this.messageField.classList.add('winner');
+    } else {
+      this.messageField.classList.remove('winner');
+    }
+  }
+
+  private writeLog(text: string) {
+    this.dominoLog.innerText += `\n${text}\n`;
+  }
+
   private gameOverWarning() {
-    this.messageField.className = 'warning';
-    const many: boolean = this.game.winners!.length > 0;
-    const winners: string = this.game.winners!.map((w) => w.name).join(', ');
-    this.messageField.innerHTML = `The game is finished. The winner${many ? 's are' : ' is'}: ${winners} Restart the game!`;
+    const winners = this.game.findWinners();
+    const many: boolean = winners!.length > 1;
+    const names: string = winners!.map((w) => w.name).join(', ');
+    this.writeMessage(`The game is finished. The winner${many ? 's are' : ' is'}: ${names} <br>Restart the game!`, 'warning');
   }
 
   /* ************** methods called on the different game states **************** */
 
   onStart(...tile: string[]) {
-    this.dominoLog.innerText += `Now playing: ${this.game.players
+    this.writeLog(`Now playing: ${this.game.players
       .map((p) => p.name)
-      .join(', ')}`;
-    this.dominoLog.innerText += `\nGame is starting with ${tile.join(' ')}\n`;
+      .join(', ')}`);
+    this.writeLog(`Game is starting with ${tile.join(' ')}`);
   }
 
   onNextMove(moveNumber: number) {
-    this.dominoLog.innerText += `\nMove ${moveNumber} --------------------------------------------------------------------\n`;
+    this.writeLog(`Move ${moveNumber} --------------------------------------------------------------------`);
   }
 
   onSuccess(
@@ -156,43 +171,39 @@ class DominoController implements DominoDelegate {
     board: string,
     playersStock: string,
   ) {
-    this.messageField.className = 'info';
-    this.messageField.innerHTML = `'${name}' played ${matching} to connect to tile ${connecting}.<br><br>Select a tile for your move:`;
+    this.writeMessage(`'${name}' played ${matching} to connect to tile ${connecting}.<br><br>Select a tile for your move:`);
 
-    this.dominoLog.innerText += `\n${name} plays ${matching} to connect to tile ${connecting} on the board
-Board is now: ${board}
-${playersStock}\n`;
+    this.writeLog(`${name} plays ${matching} to connect to tile ${connecting} on the board.
+    Board is now: ${board}
+    ${playersStock}`);
   }
 
   onRepeat(playerName: string, newTile: string) {
-    this.dominoLog.innerText += `\n${playerName} can't play, drawing tile ${newTile}`;
+    this.writeLog(`${playerName} can't play, drawing tile ${newTile}`);
   }
 
   onMiss(name: string) {
     const message = `${name} misses move`;
-    this.messageField.className = 'warning';
-    this.messageField.innerHTML = message;
-
-    this.dominoLog.innerText += `\n${message}`;
+    this.writeMessage(message, 'warning');
+    this.writeLog(message);
   }
 
   onWin(winnersNames: string[], tilesLeft: number = 0) {
-    this.messageField.className = 'info';
-    this.messageField.classList.add('winner');
     if (winnersNames.length === 1) {
       const name = winnersNames[0];
-      this.messageField.innerHTML = `'${name}' has won!`;
-      this.dominoLog.innerText += `\n${name} has won! `;
+      const message = `${name} has won!`;
+      this.writeMessage(message, 'info', true);
+      this.writeLog(message);
       if (tilesLeft > 0) {
         const manyPlayers: boolean = this.game.players.length - 1 > 1;
-        this.dominoLog.innerText += `${name} still has ${tilesLeft} tile${
+        this.writeLog(`${name} still has ${tilesLeft} tile${
           tilesLeft > 1 ? 's' : ''
-        } in the stock, but the other${manyPlayers ? 's have' : ' player has'} more.`;
+        } in the stock, but the other${manyPlayers ? 's have' : ' player has'} more.`);
       }
     } else if (winnersNames.length > 1) {
       const message = `DRAW! The players ${winnersNames.join(', ')} have ${tilesLeft} tile${tilesLeft > 1 ? 's' : ''} left each.`;
-      this.messageField.innerHTML = message;
-      this.dominoLog.innerText += `\n${message}`;
+      this.writeMessage(message, 'info', true);
+      this.writeLog(message);
     } else {
       throw new Error(`Unexpected number of winners in the game: ${winnersNames.length}`);
     }

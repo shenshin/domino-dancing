@@ -22,9 +22,11 @@ export class DominoGame {
   /** A delegate object that will receive ALL the events messages */
   delegate: DominoDelegate;
 
-  gameOver: boolean = false;
-
   moveNumber!: number;
+
+  firstTile!: Tile;
+
+  private gameWinners: Player[] | null = null;
 
   /**
    * Initiates a new dominoes game.
@@ -58,7 +60,7 @@ export class DominoGame {
 
     // reset game data
     this.moveNumber = 1;
-    this.gameOver = false;
+    this.gameWinners = null;
     this.resetStock();
     this.playLine = [];
 
@@ -76,7 +78,8 @@ export class DominoGame {
     });
 
     // pick a random tile to start a line of game
-    this.playLine.push(this.stock.shift()!);
+    this.firstTile = this.stock.shift()!;
+    this.playLine.push(this.firstTile);
   }
 
   /**
@@ -111,9 +114,7 @@ export class DominoGame {
         player.missedLastMove = true;
         this.delegate.onMiss(player.name);
       }
-      const { winners } = this;
-      if (winners) {
-        this.delegate.onWin(winners.map((w) => w.name), winners[0].stockLength);
+      if (this.findWinners()) {
         return false;
       }
     }
@@ -149,21 +150,26 @@ export class DominoGame {
    * Game stops if player's stock is empty or noone can make a move
    * @returns the winner or null if game is about to continue
    */
-  get winners(): Player[] | null {
+  findWinners(): Player[] | null {
+    if (this.gameWinners) {
+      return this.gameWinners;
+    }
     // return player who has no more tiles
     const playedAllTiles = this.players.find(
       (player) => player.stockLength === 0,
     );
     if (playedAllTiles) {
-      this.gameOver = true;
-      return [playedAllTiles];
+      this.gameWinners = [playedAllTiles];
+      this.delegate.onWin([playedAllTiles.name], 0);
+      return this.gameWinners;
     }
     if (this.players.every((player) => player.missedLastMove)) {
-      this.gameOver = true;
       // if all players missed the previous move return players with the least
       // stock lengths
-      return [...this.players].sort((a, b) => a.stockLength - b.stockLength)
+      this.gameWinners = [...this.players].sort((a, b) => a.stockLength - b.stockLength)
         .filter((p) => p.stockLength === this.players[0].stockLength);
+      this.delegate.onWin(this.gameWinners.map((w) => w.name), this.gameWinners[0].stockLength);
+      return this.gameWinners;
     }
     return null;
   }

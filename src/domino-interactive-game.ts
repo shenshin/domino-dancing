@@ -24,6 +24,7 @@ export class DoninoInteractiveGame extends DominoGame {
         user.toString(),
       );
       this.insertTile(result);
+      this.findWinners();
       return { tile: result.tileFromPlayer, isValid: true };
     }
     return { tile: chosenTile, isValid: false };
