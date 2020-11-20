@@ -2,6 +2,8 @@
 
 Here is the [working copy of the interactive version and the simulation](https://shenshin.github.io/domino-dancing/).
 
+![Screenshot of Dominoes game]()
+
 This Domino Game simulation algorithm and TypeScript implementation is designed and written by me. Yes, I decided to reinvent the wheel. It's written in vanilla TypeScript (no frameworks).
 
 This program is inspired by a JavaScript course by [HackYourFuture, Amsterdam](https://www.hackyourfuture.net/).
