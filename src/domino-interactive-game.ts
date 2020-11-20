@@ -1,6 +1,7 @@
 import DominoGame from './domino-game.js';
 import Tile from './domino-tile.js';
 
+/** Adds interactive functionality to DominoGame model */
 export class DoninoInteractiveGame extends DominoGame {
 // перекинуть все интерактивные опции в этот контроллер
   /**
@@ -24,7 +25,8 @@ export class DoninoInteractiveGame extends DominoGame {
         user.toString(),
       );
       this.insertTile(result);
-      this.findWinners();
+      // check if user has just put his last tile
+      this.getWinners();
       return { tile: result.tileFromPlayer, isValid: true };
     }
     return { tile: chosenTile, isValid: false };

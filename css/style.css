@@ -4,28 +4,28 @@
   padding: 0;
   box-sizing: border-box;
   --gap: 1rem;
+  --text-color: rgb(216, 216, 216);
 }
 body {
   padding: var(--gap);
-  color: rgb(216, 216, 216);
+  color: var(--text-color);
   background-color: #171717;
   font-family: 'Turret Road', cursive;
   letter-spacing: 0.1rem;
 }
-h1, h2 {
+h1, button, #message {
   margin-bottom: var(--gap);
 }
 button {
-  margin-bottom: var(--gap);
+  padding: 0 var(--gap);
   cursor: pointer;
   font-family: 'Turret Road', cursive;
   font-weight: 700;
+  letter-spacing: 0.1rem;
 }
-#user-stock {
-  /* margin-bottom: 3rem; */
-}
-#play-line {
-  /* margin-bottom: 1rem; */
+#stock-buttons, #user-stock, #play-line {
+  margin-bottom: var(--gap);
+  border-bottom: 1px solid var(--text-color);
 }
 .tile {
   font-size: 6rem;
@@ -34,10 +34,6 @@ button {
 #play-line {
   display: flex;
   flex-wrap: wrap;
-}
-#user-stock .tile,
-#play-line .tile {
-  /* line-height: 3.5rem; */
 }
 #user-stock .tile {
   cursor: pointer;
