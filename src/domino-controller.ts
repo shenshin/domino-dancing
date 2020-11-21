@@ -184,9 +184,9 @@ class DominoController implements DominoDelegate {
       this.successMessages = '';
     }
 
-    this.writeLog(`${player.name} plays ${matching} to connect to tile ${connecting} on the board.
-    Board is now: ${this.game}
-    ${player}`);
+    this.writeLog(
+      `${player.name} plays ${matching} to connect to tile ${connecting} on the board.\nBoard is now: ${this.game}\n${player}`,
+    );
   }
 
   onRepeat(newTile: Tile) {
