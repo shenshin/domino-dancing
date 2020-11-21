@@ -117,7 +117,7 @@ class DominoController implements DominoDelegate {
         if (selection.isValid) {
           this.updateViews();
           if (!this.game.getWinners()) {
-            this.writeMessage(`You selected ${selection.tile}<br>`);
+            this.writeMessage(`You played ${selection.tile}<br>`);
             // move goes to the next player
             setTimeout(() => {
               this.game.javascriptMakesMove();
@@ -167,14 +167,23 @@ class DominoController implements DominoDelegate {
     this.writeLog(`Move ${moveNumber} --------------------------------------------------------------------`);
   }
 
+  successMessages = ''
+
   onSuccess(
     name: string,
     matching: string,
     connecting: string,
     board: string,
     playersStock: string,
+    isLast: boolean,
   ) {
-    this.writeMessage(`'${name}' played ${matching} to connect to tile ${connecting}.<br><br>Select a tile for your move:`);
+    const message = `'${name}' played ${matching} to connect to tile ${connecting}.<br>`;
+    if (!isLast) {
+      this.successMessages += message;
+    } else {
+      this.writeMessage(`${this.successMessages + message}Select a tile for your move:`);
+      this.successMessages = '';
+    }
 
     this.writeLog(`${name} plays ${matching} to connect to tile ${connecting} on the board.
     Board is now: ${board}
@@ -184,6 +193,8 @@ class DominoController implements DominoDelegate {
   onRepeat(playerName: string, newTile: string) {
     this.writeLog(`${playerName} can't play, drawing tile ${newTile}`);
   }
+
+  missMessages: string = '';
 
   onMiss(name: string) {
     const message = `${name} misses move`;

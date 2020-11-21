@@ -22,11 +22,13 @@ export class DominoGame {
   /** A delegate object that will receive ALL the events messages */
   delegate: DominoDelegate;
 
-  /** Number of current game move */
-  moveNumber!: number;
-
   /** Tile selected to be the first in the game line */
   firstTile!: Tile;
+
+  /** Number of current game move */
+  currentMove!: number;
+
+  currentPlayer: Player | null = null;
 
   /** Set to null if the game is not finished or stores the winner(s) */
   private winners: Player[] | null = null;
@@ -62,10 +64,11 @@ export class DominoGame {
     }
 
     // reset game data
-    this.moveNumber = 1;
+    this.currentMove = 1;
     this.winners = null;
     this.resetStock();
     this.playLine = [];
+    this.currentPlayer = null;
 
     // check if the number of tiles agree with the number of players
     if (this.players.length * this.initialTiles >= this.stock.length) {
@@ -96,7 +99,9 @@ export class DominoGame {
       playerIndex < this.players.length;
       playerIndex += 1
     ) {
+      const isLastPlayer: boolean = (playerIndex === (this.players.length - 1));
       const player: Player = this.players[playerIndex];
+      this.currentPlayer = player;
       const matching = player.find([this.first, this.last]);
       if (matching) {
         player.missedLastMove = false;
@@ -107,6 +112,7 @@ export class DominoGame {
           matching.tileFromLine.toString(),
           this.toString(),
           player.toString(),
+          isLastPlayer,
         );
       } else if (this.stock.length > 0) {
         const newTile: Tile = this.stock.shift()!;
@@ -115,7 +121,7 @@ export class DominoGame {
         playerIndex -= 1;
       } else {
         player.missedLastMove = true;
-        this.delegate.onMiss(player.name);
+        this.delegate.onMiss(player.name, isLastPlayer);
       }
       if (this.getWinners()) {
         return false;
@@ -221,15 +227,15 @@ export class DominoGame {
 
   /** Sends a message to the delegate object that the game is about to start */
   protected sendStartMessage(): void {
-    if (this.moveNumber === 1) {
+    if (this.currentMove === 1) {
       this.delegate.onStart(...this.playLine.map((tile) => tile.toString()));
     }
   }
 
   /** Sends a message to the delegate object that next move is about to start */
   protected sendNextMoveMessage(): void {
-    this.delegate.onNextMove(this.moveNumber);
-    this.moveNumber += 1;
+    this.delegate.onNextMove(this.currentMove);
+    this.currentMove += 1;
   }
 
   /**

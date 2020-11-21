@@ -23,6 +23,7 @@ export class DoninoInteractiveGame extends DominoGame {
         result.tileFromLine.toString(),
         this.toString(),
         user.toString(),
+        true,
       );
       this.insertTile(result);
       // check if user has just put his last tile
