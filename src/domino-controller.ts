@@ -1,7 +1,8 @@
-import { DoninoInteractiveGame } from './domino-interactive-game.js';
-import { DominoDelegate } from './domino-delegate.js';
-import { DominoIcon } from './domino-icon.js';
+import DoninoInteractiveGame from './domino-interactive-game.js';
+import DominoDelegate from './domino-delegate.js';
+import DominoIcon from './domino-icon.js';
 import Utility from './domino-utility.js';
+import Tile from './domino-tile.js';
 
 /**
  * Connects Dominoes games model class DominoGame with it's
@@ -74,7 +75,7 @@ class DominoController implements DominoDelegate {
    */
   private addButtonsEventListeners() {
     const buttonPushed = (event: any) => {
-      if (!this.game.getWinners()) {
+      if (!this.game.findWinners()) {
         switch (event.target.id) {
           case 'miss-move':
             this.game.playerMissedMove();
@@ -110,13 +111,13 @@ class DominoController implements DominoDelegate {
 
   private createUsersTile(id: string) {
     DominoIcon.create(this.userStock, id, 'vertical').addEventListener('click', (event) => {
-      if (!this.game.getWinners()) {
+      if (!this.game.findWinners()) {
         const selection = this.game.playerSelected(
           (event.target as any).id as string,
         );
         if (selection.isValid) {
           this.updateViews();
-          if (!this.game.getWinners()) {
+          if (!this.game.findWinners()) {
             this.writeMessage(`You played ${selection.tile}<br>`);
             // move goes to the next player
             setTimeout(() => {
@@ -148,36 +149,34 @@ class DominoController implements DominoDelegate {
   }
 
   private sendGameOverWarning() {
-    const winners = this.game.getWinners();
-    const many: boolean = winners!.length > 1;
-    const names: string = winners!.map((w) => w.name).join(', ');
+    const winners = this.game.findWinners()!;
+    const many: boolean = winners.length > 1;
+    const names: string = winners.map((w) => w.name).join(', ');
     this.writeMessage(`The game is finished. The winner${many ? 's are' : ' is'}: ${names} <br>Restart the game!`, 'warning');
   }
 
   /* ************** methods called on the different game states **************** */
 
-  onStart(...tile: string[]) {
+  onStart() {
     this.writeLog(`Now playing: ${this.game.players
       .map((p) => p.name)
       .join(', ')}`);
-    this.writeLog(`Game is starting with ${tile.join(' ')}`);
+    this.writeLog(`Game is starting with ${this.game}`);
   }
 
-  onNextMove(moveNumber: number) {
-    this.writeLog(`Move ${moveNumber} --------------------------------------------------------------------`);
+  onNextMove() {
+    this.writeLog(`Move ${this.game.currentMove} --------------------------------------------------------------------`);
   }
 
   successMessages = ''
 
   onSuccess(
-    name: string,
-    matching: string,
-    connecting: string,
-    board: string,
-    playersStock: string,
+    matching: Tile,
+    connecting: Tile,
     isLast: boolean,
   ) {
-    const message = `'${name}' played ${matching} to connect to tile ${connecting}.<br>`;
+    const player = this.game.currentPlayer!;
+    const message = `'${player.name}' played ${matching} to connect to tile ${connecting}.<br>`;
     if (!isLast) {
       this.successMessages += message;
     } else {
@@ -185,26 +184,29 @@ class DominoController implements DominoDelegate {
       this.successMessages = '';
     }
 
-    this.writeLog(`${name} plays ${matching} to connect to tile ${connecting} on the board.
-    Board is now: ${board}
-    ${playersStock}`);
+    this.writeLog(`${player.name} plays ${matching} to connect to tile ${connecting} on the board.
+    Board is now: ${this.game}
+    ${player}`);
   }
 
-  onRepeat(playerName: string, newTile: string) {
-    this.writeLog(`${playerName} can't play, drawing tile ${newTile}`);
+  onRepeat(newTile: Tile) {
+    this.writeLog(`${this.game.currentPlayer!.name} can't play, drawing tile ${newTile}`);
   }
 
   missMessages: string = '';
 
-  onMiss(name: string) {
-    const message = `${name} misses move`;
+  onMiss() {
+    const message = `${this.game.currentPlayer!.name} misses move`;
     this.writeMessage(message, 'warning');
     this.writeLog(message);
   }
 
-  onWin(winnersNames: string[], tilesLeft: number = 0) {
+  onWin() {
+    const winners = this.game.findWinners()!;
+    const winnersNames: string[] = winners.map((w) => w.name);
+    const tilesLeft: number = winners[0].stockLength;
     if (winnersNames.length === 1) {
-      const name = winnersNames[0];
+      const [name] = winnersNames;
       const message = `${name} has won!`;
       this.writeMessage(message, 'info', true);
       this.writeLog(message);

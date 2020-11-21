@@ -100,30 +100,26 @@ export class DominoGame {
       playerIndex += 1
     ) {
       const isLastPlayer: boolean = (playerIndex === (this.players.length - 1));
-      const player: Player = this.players[playerIndex];
-      this.currentPlayer = player;
-      const matching = player.find([this.first, this.last]);
+      this.currentPlayer = this.players[playerIndex];
+      const matching = this.currentPlayer.find([this.first, this.last]);
       if (matching) {
-        player.missedLastMove = false;
+        this.currentPlayer.missedLastMove = false;
         this.insertTile(matching);
         this.delegate.onSuccess(
-          player.name,
-          matching.tileFromPlayer.toString(),
-          matching.tileFromLine.toString(),
-          this.toString(),
-          player.toString(),
+          matching.tileFromPlayer,
+          matching.tileFromLine,
           isLastPlayer,
         );
       } else if (this.stock.length > 0) {
         const newTile: Tile = this.stock.shift()!;
-        player.add(newTile);
-        this.delegate.onRepeat(player.name, newTile.toString());
+        this.currentPlayer.add(newTile);
+        this.delegate.onRepeat(newTile);
         playerIndex -= 1;
       } else {
-        player.missedLastMove = true;
-        this.delegate.onMiss(player.name, isLastPlayer);
+        this.currentPlayer.missedLastMove = true;
+        this.delegate.onMiss(isLastPlayer);
       }
-      if (this.getWinners()) {
+      if (this.findWinners()) {
         return false;
       }
     }
@@ -159,7 +155,7 @@ export class DominoGame {
    * Game stops if player's stock is empty or no one can make a move
    * @returns the winner(s) or null if game is about to continue
    */
-  getWinners(): Player[] | null {
+  findWinners(): Player[] | null {
     // returnes winners if they were already found
     if (this.winners) {
       return this.winners;
@@ -170,15 +166,14 @@ export class DominoGame {
     );
     if (playedAllTiles) {
       this.winners = [playedAllTiles];
-      this.delegate.onWin([playedAllTiles.name], 0);
+      this.delegate.onWin();
       return this.winners;
     }
     if (this.players.every((player) => player.missedLastMove)) {
-      // if all players missed the previous move return players with the least
-      // stock lengths
-      this.winners = [...this.players].sort((a, b) => a.stockLength - b.stockLength)
-        .filter((p) => p.stockLength === this.players[0].stockLength);
-      this.delegate.onWin(this.winners.map((w) => w.name), this.winners[0].stockLength);
+      // if all players missed the previous move return players with the least stock lengths
+      this.winners = [...this.players].sort((a, b) => a.stockLength - b.stockLength);
+      this.winners = this.winners.filter((p) => p.stockLength === this.winners![0].stockLength);
+      this.delegate.onWin();
       return this.winners;
     }
     return null;
@@ -228,13 +223,13 @@ export class DominoGame {
   /** Sends a message to the delegate object that the game is about to start */
   protected sendStartMessage(): void {
     if (this.currentMove === 1) {
-      this.delegate.onStart(...this.playLine.map((tile) => tile.toString()));
+      this.delegate.onStart();
     }
   }
 
   /** Sends a message to the delegate object that next move is about to start */
   protected sendNextMoveMessage(): void {
-    this.delegate.onNextMove(this.currentMove);
+    this.delegate.onNextMove();
     this.currentMove += 1;
   }
 

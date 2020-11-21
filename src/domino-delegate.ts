@@ -1,22 +1,20 @@
+import Tile from './domino-tile.js';
 /* eslint-disable no-unused-vars */
 /**
  * Protocol to implement by a class that wants to receive messages
  * from Domino-Dancing game. Methods represent different game states
  */
 export interface DominoDelegate {
-  onStart(...tile: string[]): void;
-  onNextMove(moveNumber: number): void;
+  onStart(): void;
+  onNextMove(): void;
   onSuccess(
-    name: string,
-    matching: string,
-    connecting: string,
-    board: string,
-    playerStock: string,
-    isLast: boolean
+    matching: Tile,
+    connecting: Tile,
+    isLastPlayer: boolean
   ): void;
-  onMiss(player: string, isLast: boolean): void;
-  onWin(winnersNames: string[], remainingCards: number): void;
-  onRepeat(player: string, tile: string): void;
+  onMiss(isLastPlayer: boolean): void;
+  onWin(): void;
+  onRepeat(newTile: Tile): void;
 }
 
 export default DominoDelegate;
