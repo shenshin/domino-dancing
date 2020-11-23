@@ -138,6 +138,9 @@ class DominoController implements DominoDelegate {
   }
 
   private writeMessage(text: string, isLast: boolean = true, type: 'info' | 'warning' = 'info', large: boolean = false) {
+    if (large) {
+      this.messagesStack = ''; // remove pevious messages if big text
+    }
     this.messagesStack += text;
     if (isLast) {
       this.messageField.className = type;

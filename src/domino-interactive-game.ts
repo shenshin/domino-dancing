@@ -13,6 +13,7 @@ export class DoninoInteractiveGame extends DominoGame {
     const chosenTile = this.currentPlayer.getTileByID(tileID);
     const result = this.currentPlayer.check([this.first, this.last], chosenTile);
     if (result) {
+      this.currentPlayer.missedLastMove = false;
       this.sendStartMessage();
       this.sendNextMoveMessage();
       this.insertTile(result);
