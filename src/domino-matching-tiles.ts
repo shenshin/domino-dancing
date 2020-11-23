@@ -1,4 +1,4 @@
-import { Tile } from './domino-tile.js';
+import Tile from './domino-tile.js';
 
 /**
  * Tiles-handling functions return parameters. Represents a tile in player's

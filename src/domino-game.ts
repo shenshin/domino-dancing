@@ -1,8 +1,8 @@
-import { Tile } from './domino-tile.js';
-import { Player } from './domino-player.js';
-import { Utility } from './domino-utility.js';
-import { DominoDelegate } from './domino-delegate.js';
-import { MatchingTiles } from './domino-matching-tiles.js';
+import Tile from './domino-tile.js';
+import Player from './domino-player.js';
+import Utility from './domino-utility.js';
+import DominoDelegate from './domino-delegate.js';
+import MatchingTiles from './domino-matching-tiles.js';
 /**
  * The Model of 'Dominoes' game
  */
@@ -113,7 +113,7 @@ export class DominoGame {
       } else if (this.stock.length > 0) {
         const newTile: Tile = this.stock.shift()!;
         this.currentPlayer.add(newTile);
-        this.delegate.onRepeat(newTile);
+        this.delegate.onRepeat(newTile, isLastPlayer);
         playerIndex -= 1;
       } else {
         this.currentPlayer.missedLastMove = true;
@@ -133,7 +133,11 @@ export class DominoGame {
     // send a message to the delegate object that the game is about to start
     this.sendStartMessage();
     // Loop starts each next move
-    for (;;) {
+    // I can not put '!this.makeMove(0)' inside while condition because
+    // I want the model to send a message about next move before checking
+    // if it's time to stop the game.
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
       // send a message to the delegate object that next move is about to start
       this.sendNextMoveMessage();
       if (!this.makeMove(0)) break;

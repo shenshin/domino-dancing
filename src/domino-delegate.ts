@@ -7,6 +7,12 @@ import Tile from './domino-tile.js';
 export interface DominoDelegate {
   onStart(): void;
   onNextMove(): void;
+  /**
+   * @param isLastPlayer here and below indicates if model is sending
+   *  information about the move of the last player in order for the
+   *  controller to update UI only when messages from every player
+   *  are received for the current move
+   */
   onSuccess(
     matching: Tile,
     connecting: Tile,
@@ -14,7 +20,7 @@ export interface DominoDelegate {
   ): void;
   onMiss(isLastPlayer: boolean): void;
   onWin(): void;
-  onRepeat(newTile: Tile): void;
+  onRepeat(newTile: Tile, isLastPlayer: boolean): void;
 }
 
 export default DominoDelegate;

@@ -1,5 +1,5 @@
-import { Tile } from './domino-tile.js';
-import { MatchingTiles } from './domino-matching-tiles.js';
+import Tile from './domino-tile.js';
+import MatchingTiles from './domino-matching-tiles.js';
 /**
  * Domino game player. The total number of players in a game is not limited.
  */
@@ -22,7 +22,7 @@ export class Player {
    * @param number
    */
   find(edgeTiles: [Tile, Tile]): MatchingTiles {
-    const lineEdges: number[] = [
+    const lineEdges: [number, number] = [
       edgeTiles[0].first,
       edgeTiles[edgeTiles.length - 1].last,
     ];
@@ -46,7 +46,7 @@ export class Player {
    * @param selected tile to be checked
    */
   check(edgeTiles: [Tile, Tile], selected: Tile): MatchingTiles {
-    const lineEdges: number[] = [
+    const lineEdges: [number, number] = [
       edgeTiles[0].first,
       edgeTiles[edgeTiles.length - 1].last,
     ];
@@ -67,15 +67,15 @@ export class Player {
    * @param id of the unique tile. '51' and '15' are the IDs of the same tile
    */
   getTileByID(id: string): Tile {
-    const numbers: number[] = id.split('').map((symbol) => Number(symbol));
-    const matched = this.stock.find(
+    const numbers: number[] = id.split('').map((s) => Number(s));
+    const matched: Tile | undefined = this.stock.find(
       (tile) => (tile.ends[0] === numbers[0] && tile.ends[1] === numbers[1])
         || (tile.ends[0] === numbers[1] && tile.ends[1] === numbers[0]),
     );
     if (matched === undefined) {
       throw new Error('Required tile doesn\'t exist in player\'s stock');
     }
-    return matched ?? null;
+    return matched;
   }
 
   /**

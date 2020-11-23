@@ -1,4 +1,4 @@
-import { Utility } from './domino-utility.js';
+import Utility from './domino-utility.js';
 /**
  * Collection of static methods drawing tiles HTML representations
  */
