@@ -192,9 +192,9 @@ class DominoController implements DominoDelegate {
     this.updateViews();
   }
 
-  onRepeat(newTile: Tile, isLastPlayer: boolean) {
+  onRepeat(newTile: Tile) {
     const message = `${this.game.currentPlayer!.name} can't play, drawing tile ${newTile}`;
-    this.writeMessage(`${message}<br>${isLastPlayer ? 'Select a tile for the move:' : ''}`, isLastPlayer, 'warning');
+    this.writeMessage(`${message}<br>`, false, 'warning');
     this.writeLog(message);
     this.updateViews();
   }
