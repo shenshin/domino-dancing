@@ -12,6 +12,38 @@ export class Player {
 
   missedLastMove: boolean = false;
 
+  // maximum number of players is 27
+  static names: string[] = [
+    'Luna',
+    'Wouter',
+    'Rob',
+    'Alex',
+    'Beatrix',
+    'Maxima',
+    'Edwin',
+    'Leo',
+    'Merel',
+    'Peter',
+    'Nel',
+    'Sara',
+    'Hans',
+    'Frits',
+    'Mark',
+    'Dasey',
+    'Anna',
+    'Martin',
+    'Elisabeth',
+    'Victoria',
+    'Willem',
+    'Wilgert',
+    'Tjebbe',
+    'Andrew',
+    'Elton',
+    'David',
+    'Maria',
+    'Alan',
+  ]
+
   constructor(name: string) {
     this.name = name;
   }

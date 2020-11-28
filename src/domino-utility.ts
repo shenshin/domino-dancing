@@ -30,7 +30,7 @@ export class Utility {
   /**
    * Shuffles an array of any elements type with Fisher-Yates algorithm
    */
-  static shuffle<T>(array: T[]) {
+  static shuffle<T>(array: T[]): void {
     for (let i = array.length - 1; i > 0; i -= 1) {
       const j = Math.floor(Math.random() * i);
       const temp = array[i];

@@ -3,6 +3,11 @@ import Tile from './domino-tile.js';
 
 /** Adds interactive functionality to DominoGame model */
 export class DoninoInteractiveGame extends DominoGame {
+  addPlayers() {
+    super.addPlayers();
+    this.players[0].name = 'User';
+  }
+
   userChangedNumberOfPlayers(newValue: number) {
     if (newValue * this.tilesPerPlayer >= 28 || newValue < 2) {
       this.delegate.onError(`Ellegal number of players: ${newValue}! Number of players times tiles per player should be less then 27. Number of tiles must be more than 0 and number of players - more than 1.`);
