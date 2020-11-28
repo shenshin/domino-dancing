@@ -3,12 +3,30 @@ import Tile from './domino-tile.js';
 
 /** Adds interactive functionality to DominoGame model */
 export class DoninoInteractiveGame extends DominoGame {
+  userChangedNumberOfPlayers(newValue: number) {
+    if (newValue * this.tilesPerPlayer >= 28 || newValue < 2) {
+      this.delegate.onError(`Ellegal number of players: ${newValue}! Number of players times tiles per player should be less then 27. Number of tiles must be more than 0 and number of players - more than 1.`);
+    } else {
+      this.numberOfPlayers = newValue;
+      this.delegate.onResetModel();
+    }
+  }
+
+  userChangedNumberOfTiles(newValue: number) {
+    if (this.players.length * newValue >= 28 || newValue < 1) {
+      this.delegate.onError(`Ellegal number of tiles per player: ${newValue}! Number of players times tiles per player should be less then 27. Number of tiles must be more than 0 and number of players - more than 1.`);
+    } else {
+      this.tilesPerPlayer = newValue;
+      this.delegate.onResetModel();
+    }
+  }
+
   /**
    * Checks if user selected a valid tile and if so, inserts this tile into the playline
    * @param tileID string representation of tile coming from the user interface
    * @returns tile: selected tile, isValid: whether the tile is accepted or not
    */
-  playerSelected(tileID: string): { tile: Tile; isValid: boolean } {
+  userSelected(tileID: string): { tile: Tile; isValid: boolean } {
     [this.currentPlayer] = this.players;
     const chosenTile = this.currentPlayer.getTileByID(tileID);
     const result = this.currentPlayer.check([this.first, this.last], chosenTile);
@@ -29,19 +47,25 @@ export class DoninoInteractiveGame extends DominoGame {
     return { tile: chosenTile, isValid: false };
   }
 
-  playerDrawsTile(): void {
+  userDrawsTile(): void {
     [this.currentPlayer] = this.players;
     if (this.stock.length > 0) {
-      this.currentPlayer.add(this.stock.shift()!);
+      const newTile = this.stock.shift()!;
+      this.sendStartMessage();
+      this.sendNextMoveMessage();
+      this.delegate.onRepeat(newTile, true);
+      this.currentPlayer.add(newTile);
     } else {
-      this.playerMissedMove();
+      this.userMissedMove();
     }
   }
 
-  playerMissedMove() {
+  userMissedMove() {
     [this.currentPlayer] = this.players;
+    this.currentPlayer.missedLastMove = true;
     this.sendStartMessage();
     this.sendNextMoveMessage();
+    this.delegate.onMiss(true);
     this.currentPlayer.missedLastMove = true;
     this.javascriptMakesMove();
   }

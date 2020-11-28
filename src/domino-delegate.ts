@@ -21,6 +21,8 @@ export interface DominoDelegate {
   onMiss(isLastPlayer: boolean): void;
   onWin(): void;
   onRepeat(newTile: Tile, isLastPlayer: boolean): void;
+  onError(message: string): void;
+  onResetModel(): void;
 }
 
 export default DominoDelegate;

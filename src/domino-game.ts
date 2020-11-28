@@ -61,21 +61,12 @@ export class DominoGame {
    * Starts the game from the beginning
    */
   restart(): void {
-    // reset game data
+    this.resetStock();
     this.addPlayers();
     this.currentMove = 1;
     this.winners = null;
-    this.resetStock();
     this.playLine = [];
     this.currentPlayer = null;
-
-    // check if the number of tiles agree with the number of players
-    if (this.players.length * this.tilesPerPlayer >= this.stock.length) {
-      throw new RangeError(
-        'The desired number of tiles is greater than the stock',
-      );
-    }
-
     // pick a random tile to start a line of game
     this.firstTile = this.stock.shift()!;
     this.playLine.push(this.firstTile);

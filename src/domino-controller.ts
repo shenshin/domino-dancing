@@ -59,6 +59,8 @@ class DominoController implements DominoDelegate {
    * Adds event listeners to tiles
    */
   updateViews(): void {
+    this.numberOfPlayersInput.value = this.game.players.length.toString();
+    this.tilesPerPlayerInput.value = this.game.tilesPerPlayer.toString();
     this.userStock.innerText = '';
     this.playLine.innerText = '';
     // draw user stock and add event listeners to tiles on screen
@@ -77,12 +79,10 @@ class DominoController implements DominoDelegate {
   private addInputsEventListeners() {
     const parse = (e: Event): number => parseInt((e.target as HTMLInputElement).value, 10);
     this.numberOfPlayersInput.addEventListener('change', (e: Event) => {
-      this.game.numberOfPlayers = parse(e);
-      this.restartGame();
+      this.game.userChangedNumberOfPlayers(parse(e));
     });
     this.tilesPerPlayerInput.addEventListener('change', (e: Event) => {
-      this.game.tilesPerPlayer = parse(e);
-      this.restartGame();
+      this.game.userChangedNumberOfTiles(parse(e));
     });
   }
 
@@ -94,14 +94,14 @@ class DominoController implements DominoDelegate {
       if (!this.game.findWinners()) {
         switch (event.target.id) {
           case 'miss-move':
-            this.game.playerMissedMove();
+            this.game.userMissedMove();
             break;
           case 'draw-tile':
             if (this.game.stock.length === 0) {
               this.writeMessage('No more tiles in the stock! You miss the move.', true, 'warning');
-              setTimeout(this.game.playerMissedMove.bind(this.game), 1000);
+              setTimeout(this.game.userMissedMove.bind(this.game), 1000);
             } else {
-              this.game.playerDrawsTile();
+              this.game.userDrawsTile();
             }
             break;
           case 'simulate':
@@ -128,7 +128,7 @@ class DominoController implements DominoDelegate {
   private createUsersTile(id: string) {
     DominoIcon.create(this.userStock, id, 'vertical').addEventListener('click', (event) => {
       if (!this.game.findWinners()) {
-        const selection = this.game.playerSelected(
+        const selection = this.game.userSelected(
           (event.target as any).id as string,
         );
         if (selection.isValid) {
@@ -242,6 +242,15 @@ class DominoController implements DominoDelegate {
       throw new Error(`Unexpected number of winners in the game: ${winnersNames.length}`);
     }
     this.updateViews();
+  }
+
+  onError(message: string): void {
+    this.writeMessage(message, true, 'warning');
+    this.updateViews();
+  }
+
+  onResetModel(): void {
+    this.restartGame();
   }
 }
 
