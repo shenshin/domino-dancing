@@ -17,7 +17,9 @@ export class DominoGame {
   playLine: Tile[] = [];
 
   /** The number of tiles, each player gets in the beginning */
-  initialTiles: number = 7;
+  tilesPerPlayer: number = 7;
+
+  numberOfPlayers: number = 3;
 
   /** A delegate object that will receive ALL the events messages */
   delegate: DominoDelegate;
@@ -44,26 +46,23 @@ export class DominoGame {
   }
 
   /**
-   * Creates Player objects and adds to the game
-   * @param players one or more player names
+   * Creates 'numberOfPlayers' Player objects and adds to the game
    */
-  addPlayers(...players: string[]): void {
-    players.forEach((player) => this.addPlayer(new Player(player)));
+  addPlayers(): void {
+    this.players = [];
+    for (let i = 0; i < this.numberOfPlayers; i += 1) {
+      const player = new Player(`Player ${i + 1}`);
+      this.drawTilesTo(player);
+      this.addPlayer(player);
+    }
   }
 
   /**
    * Starts the game from the beginning
    */
   restart(): void {
-    // check if the number of players is more than one
-    const numberOfPlayers = this.players.length;
-    if (numberOfPlayers < 2) {
-      throw new RangeError(
-        `Add ${2 - numberOfPlayers} more player${numberOfPlayers > 1 ? 's' : ''} to the game!`,
-      );
-    }
-
     // reset game data
+    this.addPlayers();
     this.currentMove = 1;
     this.winners = null;
     this.resetStock();
@@ -71,17 +70,11 @@ export class DominoGame {
     this.currentPlayer = null;
 
     // check if the number of tiles agree with the number of players
-    if (this.players.length * this.initialTiles >= this.stock.length) {
+    if (this.players.length * this.tilesPerPlayer >= this.stock.length) {
       throw new RangeError(
         'The desired number of tiles is greater than the stock',
       );
     }
-
-    // reset players' stocks
-    this.players.forEach((player) => {
-      player.reset();
-      this.drawTilesTo(player);
-    });
 
     // pick a random tile to start a line of game
     this.firstTile = this.stock.shift()!;
@@ -193,7 +186,7 @@ export class DominoGame {
 
   // Draw an 'initialTiles' number of tiles to each player
   private drawTilesTo(player: Player): void {
-    player.add(...this.stock.splice(0, this.initialTiles));
+    player.add(...this.stock.splice(0, this.tilesPerPlayer));
   }
 
   /**

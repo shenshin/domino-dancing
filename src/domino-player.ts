@@ -5,7 +5,7 @@ import MatchingTiles from './domino-matching-tiles.js';
  */
 export class Player {
   // player's name
-  readonly name: string;
+  name: string;
 
   // tiles that player currently has
   stock: Tile[] = [];
@@ -91,22 +91,6 @@ export class Player {
    */
   add(...tiles: Tile[]): void {
     this.stock.push(...tiles);
-  }
-
-  /**
-   * Remove tile from player's stock
-   * @param tile to remove
-   */
-  remove(tile: Tile) {
-    this.stock = this.stock.filter((tileInStock) => tileInStock !== tile);
-  }
-
-  /**
-   * Reset player for the next game
-   */
-  reset() {
-    this.stock = [];
-    this.missedLastMove = false;
   }
 
   /**

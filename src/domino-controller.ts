@@ -29,17 +29,18 @@ class DominoController implements DominoDelegate {
 
   simulateButton: HTMLElement = Utility.getElement('simulate');
 
+  numberOfPlayersInput = Utility.getElement('number-of-players') as HTMLInputElement;
+
+  tilesPerPlayerInput = Utility.getElement('tiles-per-player') as HTMLInputElement;
+
   /** Temporary storage to save messages received from the players during one move */
   messagesStack: string = '';
 
   constructor() {
     // create new game and set this class as a delegate of dame model
     this.game = new DoninoInteractiveGame(this);
-    this.game.initialTiles = 7;
-    this.game.addPlayers('User', 'Beatrix', 'Maxima');
-
     this.addButtonsEventListeners();
-
+    this.addInputsEventListeners();
     this.restartGame();
   }
 
@@ -70,6 +71,18 @@ class DominoController implements DominoDelegate {
       if (tile.id === this.game.firstTile.id) {
         tileHTML.classList.add('first-in-line');
       }
+    });
+  }
+
+  private addInputsEventListeners() {
+    const parse = (e: Event): number => parseInt((e.target as HTMLInputElement).value, 10);
+    this.numberOfPlayersInput.addEventListener('change', (e: Event) => {
+      this.game.numberOfPlayers = parse(e);
+      this.restartGame();
+    });
+    this.tilesPerPlayerInput.addEventListener('change', (e: Event) => {
+      this.game.tilesPerPlayer = parse(e);
+      this.restartGame();
     });
   }
 

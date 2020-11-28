@@ -10,6 +10,8 @@
     <header>
       <h1>Domino Dancing</h1>
       <button id="restart">Restart the Game</button>
+      <div>Number of players:<input type="text" id="number-of-players" value="3" min="2" max="14" maxlength="2"></div>
+      <div>Tiles per player:<input type="text" id="tiles-per-player" value="7" min="2" max="14" maxlength="2"></div>
     </header>
     <main>
       <section>
@@ -28,6 +30,7 @@
         <pre id="domino-log"></pre>
       </section>
     </main>
+
     <script type="module" src="./lib/domino-controller.js"></script>
   </body>
 </html>
